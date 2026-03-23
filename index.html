@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Search</title>
+  </head>
+  <body>
+    <form id="search-form">
+      <input type="text" name="searchQuery" placeholder="Search images..." />
+      <button type="submit">Search</button>
+    </form>
+
+    <div class="gallery"></div>
+
+    <button id="load-more" hidden>Load more</button>
+
+    <p id="loading" hidden>Loading images, please wait...</p>
+
+    <p id="end-message" hidden>
+      We're sorry, but you've reached the end of search results.
+    </p>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
