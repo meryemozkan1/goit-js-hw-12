@@ -1,14 +1,14 @@
 import "./css/style.css";
 
-import { fetchImages } from "./Js/api";
-import { renderImages } from "./Js/render";
-import { initLightbox, refreshLightbox } from "./Js/lightbox";
-import { smoothScroll } from "./Js/scroll";
+import { fetchImages } from "./Js/api.js";
+import { renderImages } from "./Js/render.js";
+import { initLightbox, refreshLightbox } from "./Js/lightbox.js";
+import { smoothScroll } from "./Js/scroll.js";
 
 const form = document.getElementById("search-form");
 const gallery = document.querySelector(".gallery");
 const loadMoreBtn = document.getElementById("load-more");
-const endMessage = document.getElementById("end-message");
+const message = document.getElementById("message");
 const loadingText = document.getElementById("loading");
 
 let query = "";
@@ -18,62 +18,59 @@ let totalHits = 0;
 const PER_PAGE = 20;
 
 initLightbox();
+hideLoadMore();
+hideMessage();
+hideLoader();
 
-form.addEventListener("submit", async e => {
-  e.preventDefault();
+form.addEventListener("submit", handleSearch);
+loadMoreBtn.addEventListener("click", handleLoadMore);
 
-  query = e.target.searchQuery.value.trim();
+async function handleSearch(event) {
+  event.preventDefault();
 
-  if (!query) {
-    return;
-  }
+  query = event.currentTarget.elements.searchQuery.value.trim();
+
+  if (!query) return;
 
   page = 1;
   totalHits = 0;
-
   gallery.innerHTML = "";
-  endMessage.hidden = true;
-  loadMoreBtn.hidden = true;
-  loadMoreBtn.disabled = false;
-  loadingText.hidden = false;
+  hideLoadMore();
+  hideMessage();
+  showLoader();
 
   try {
     const data = await fetchImages(query, page);
     totalHits = data.totalHits;
 
-    if (data.hits.length === 0) {
-      endMessage.textContent =
-        "Sorry, there are no images matching your search query. Please try again.";
-      endMessage.hidden = false;
+    if (!data.hits || data.hits.length === 0) {
+      showMessage(
+        "Sorry, there are no images matching your search query. Please try again."
+      );
       return;
     }
 
     gallery.innerHTML = renderImages(data.hits);
     refreshLightbox();
 
-    const totalPages = Math.ceil(totalHits / PER_PAGE);
-
-    if (page < totalPages) {
-      loadMoreBtn.hidden = false;
+    if (totalHits > PER_PAGE) {
+      showLoadMore();
     } else {
-      loadMoreBtn.hidden = true;
-      endMessage.textContent =
-        "We're sorry, but you've reached the end of search results.";
-      endMessage.hidden = false;
+      hideLoadMore();
     }
   } catch (error) {
-    endMessage.textContent = "Something went wrong. Please try again later.";
-    endMessage.hidden = false;
+    console.error(error);
+    showMessage("Something went wrong. Please try again later.");
   } finally {
-    loadingText.hidden = true;
+    hideLoader();
   }
-});
+}
 
-loadMoreBtn.addEventListener("click", async () => {
+async function handleLoadMore() {
   page += 1;
   loadMoreBtn.disabled = true;
-  loadingText.hidden = false;
-  endMessage.hidden = true;
+  hideMessage();
+  showLoader();
 
   try {
     const data = await fetchImages(query, page);
@@ -85,18 +82,43 @@ loadMoreBtn.addEventListener("click", async () => {
     const totalPages = Math.ceil(totalHits / PER_PAGE);
 
     if (page >= totalPages) {
-      loadMoreBtn.hidden = true;
-      endMessage.textContent =
-        "We're sorry, but you've reached the end of search results.";
-      endMessage.hidden = false;
+      hideLoadMore();
+      showMessage("We're sorry, but you've reached the end of search results.");
     } else {
       loadMoreBtn.disabled = false;
     }
   } catch (error) {
-    endMessage.textContent = "Something went wrong. Please try again later.";
-    endMessage.hidden = false;
+    console.error(error);
     loadMoreBtn.disabled = false;
+    showMessage("Something went wrong. Please try again later.");
   } finally {
-    loadingText.hidden = true;
+    hideLoader();
   }
-});
+}
+
+function showLoadMore() {
+  loadMoreBtn.hidden = false;
+}
+
+function hideLoadMore() {
+  loadMoreBtn.hidden = true;
+  loadMoreBtn.disabled = false;
+}
+
+function showMessage(text) {
+  message.textContent = text;
+  message.hidden = false;
+}
+
+function hideMessage() {
+  message.textContent = "";
+  message.hidden = true;
+}
+
+function showLoader() {
+  loadingText.hidden = false;
+}
+
+function hideLoader() {
+  loadingText.hidden = true;
+}
