@@ -3,15 +3,13 @@ export function renderImages(images) {
     .map(
       image => `
         <div class="photo-card">
-          <a class="gallery-link" href="${image.largeImageURL}">
+          <a href="${image.largeImageURL}">
             <img
-              class="gallery-image"
               src="${image.webformatURL}"
               alt="${image.tags}"
               loading="lazy"
             />
           </a>
-
           <div class="info">
             <p class="info-item">
               <b>Likes</b>
